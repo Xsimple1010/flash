@@ -7,10 +7,12 @@ mod get_executables;
 mod send_executable;
 
 use get_executables::get_executables;
+use send_executable::send_executable;
 
 pub async fn init_server(state: AppState) {
     let app = Router::new()
         .route("/executables", get(get_executables))
+        .route("/executable/{name}", get(send_executable))
         .with_state(state);
 
     let addr = "0.0.0.0:4090";
