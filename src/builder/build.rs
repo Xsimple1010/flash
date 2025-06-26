@@ -62,7 +62,12 @@ async fn list_exes(state: AppState, path: &String) {
             };
 
             let mut hash = DefaultHasher::new();
-            entry.metadata().unwrap().created().unwrap().hash(&mut hash);
+            entry
+                .metadata()
+                .unwrap()
+                .modified()
+                .unwrap()
+                .hash(&mut hash);
 
             let executable = Executable {
                 name: file_name.to_string(),
