@@ -1,0 +1,45 @@
+{
+    // Use o IntelliSense para saber mais sobre os atributos possíveis.
+    // Focalizar para exibir as descrições dos atributos existentes.
+    // Para obter mais informações, acesse: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'flash'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=flash",
+                    "--package=flash",
+                ],
+                "filter": {
+                    "name": "flash",
+                    "kind": "bin"
+                }
+            },
+            "args": ["--path=obdir"],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'flash'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=flash",
+                    "--package=flash"
+                ],
+                "filter": {
+                    "name": "flash",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+}
