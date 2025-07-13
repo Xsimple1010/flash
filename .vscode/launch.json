@@ -19,7 +19,9 @@
                     "kind": "bin"
                 }
             },
-            "args": ["--path=/home/aderval/RustroverProjects/flash/obdir"],
+            "args": [
+                "--path=/home/aderval/RustroverProjects/flash/obdir"
+            ],
             "cwd": "${workspaceFolder}"
         },
         {

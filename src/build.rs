@@ -5,36 +5,35 @@ use std::{
     process::Command,
 };
 
-use tokio::task::{self};
-
 use crate::state::{AppState, Executable};
 
-pub async fn build_workspace(state: AppState, path: String) {
+pub async fn build_workspace(state: &mut AppState, path: String) {
     let path_clone = path.clone();
 
-    println!("Inicializando o build");
+    let output = Command::new("cargo")
+        .arg("build")
+        .current_dir(path_clone)
+        .output();
 
-    let output = task::spawn_blocking(move || {
-        Command::new("cargo")
-            .arg("build")
-            .current_dir(path_clone)
-            .output()
-            .expect("Falha ao executar o comando cargo build")
-    })
-    .await
-    .expect("Falha na task de build");
+    match output {
+        Ok(output) => {
+            if !output.status.success() {
+                let stderr = String::from_utf8_lossy(&output.stderr);
+                eprintln!("Erro no build: {}", stderr);
+                return;
+            }
 
-    if !output.status.success() {
-        let stderr = String::from_utf8_lossy(&output.stderr);
-        eprintln!("Erro no build: {}", stderr);
-        return;
+            println!("Build realizado com sucesso no diretório: {}", &path);
+            list_exes(state, &path).await;
+        }
+        Err(e) => {
+            eprintln!("Erro ao executar o comando cargo build: {}", e);
+            return;
+        }
     }
-
-    println!("Build realizado com sucesso no diretório: {}", &path);
-    list_exes(state, &path).await;
 }
 
-async fn list_exes(state: AppState, path: &String) {
+async fn list_exes(state: &mut AppState, path: &String) {
     let target_dir = Path::new(&path).join("target").join("debug");
 
     let entries = match read_dir(&target_dir) {
@@ -47,10 +46,6 @@ async fn list_exes(state: AppState, path: &String) {
             return;
         }
     };
-
-    {
-        state.crates.lock().await.clear();
-    }
 
     for entry in entries.filter_map(Result::ok) {
         let path = entry.path();
@@ -69,13 +64,28 @@ async fn list_exes(state: AppState, path: &String) {
                 .unwrap()
                 .hash(&mut hash);
 
-            let executable = Executable {
-                name: file_name.to_string(),
-                path: path.to_string_lossy().to_string(),
-                hash: hash.finish(),
-            };
+            let hash = hash.finish();
 
-            state.crates.lock().await.push(executable);
+            let mut nee_push = true;
+
+            for exe in &mut state.crates {
+                if exe.name == file_name && exe.hash != hash {
+                    exe.hash = hash;
+                    exe.need_update = true;
+                    exe.path = path.to_string_lossy().to_string();
+                    nee_push = false;
+                    break;
+                }
+            }
+
+            if nee_push {
+                state.crates.push(Executable {
+                    name: file_name.to_string(),
+                    hash,
+                    need_update: true,
+                    path: path.to_string_lossy().to_string(),
+                });
+            }
         }
     }
 }

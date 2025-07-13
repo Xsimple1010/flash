@@ -1,0 +1,8 @@
+[
+    {
+        "name": "Runtime 1",
+        "executable": "obdir",
+        "deps": [],
+        "url": "http://localhost:8080"
+    }
+]

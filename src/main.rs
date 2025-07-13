@@ -1,12 +1,13 @@
 use clap::Parser;
-use tokio::task;
 
-use crate::{arg::Args, builder::watch::watch_workspace, server::init_server, state::AppState};
+use crate::{arg::Args, state::AppState, watch::watch_workspace};
 
 mod arg;
-mod builder;
-mod server;
+mod build;
+mod observers_handle;
+mod send_executable;
 mod state;
+mod watch;
 
 #[tokio::main]
 async fn main() {
@@ -14,8 +15,6 @@ async fn main() {
 
     let state = AppState::default();
     let state_for_thread = state.clone();
-
-    task::spawn(init_server(state.clone()));
 
     let err = watch_workspace(state_for_thread.clone(), args.path).await;
     println!("{:?}", err);
