@@ -1,9 +1,4 @@
-use std::{
-    fs::read_dir,
-    hash::{DefaultHasher, Hash, Hasher},
-    path::Path,
-    process::Command,
-};
+use std::{fs::read_dir, path::Path, process::Command};
 
 use crate::state::{AppState, Executable};
 
@@ -56,22 +51,14 @@ async fn list_exes(state: &mut AppState, path: &String) {
                 None => continue,
             };
 
-            let mut hash = DefaultHasher::new();
-            entry
-                .metadata()
-                .unwrap()
-                .modified()
-                .unwrap()
-                .hash(&mut hash);
-
-            let hash = hash.finish();
+            let time = entry.metadata().unwrap().modified().unwrap();
 
             let mut nee_push = true;
 
             for exe in &mut state.crates {
                 if exe.name == file_name {
-                    exe.hash = hash;
-                    exe.need_update = exe.hash != hash;
+                    exe.need_update = time > exe.time;
+                    exe.time = time;
                     exe.path = path.to_string_lossy().to_string();
                     nee_push = false;
                     break;
@@ -81,7 +68,7 @@ async fn list_exes(state: &mut AppState, path: &String) {
             if nee_push {
                 state.crates.push(Executable {
                     name: file_name.to_string(),
-                    hash,
+                    time: time,
                     need_update: true,
                     path: path.to_string_lossy().to_string(),
                 });

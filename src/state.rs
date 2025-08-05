@@ -1,3 +1,5 @@
+use std::time::SystemTime;
+
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Default, Clone)]
@@ -9,6 +11,6 @@ pub struct AppState {
 pub struct Executable {
     pub name: String,
     pub path: String,
-    pub hash: u64,
+    pub time: SystemTime,
     pub need_update: bool,
 }
