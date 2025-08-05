@@ -1,8 +1,13 @@
-[
-    {
-        "name": "Runtime 1",
-        "executable": "obdir",
-        "deps": [],
-        "url": "http://localhost:8080"
-    }
-]
+{
+    "dir": [
+        "./obdir/src"
+    ],
+    "observers": [
+        {
+            "name": "Runtime 1",
+            "executable": "obdir",
+            "deps": [],
+            "url": "http://localhost:4090"
+        }
+    ]
+}
