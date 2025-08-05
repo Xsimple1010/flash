@@ -25,8 +25,6 @@ impl FlashConfig {
         for entry in dir {
             let path = entry.expect("Failed to read file entry").path();
 
-            println!("{:?}", path);
-
             if path.is_file() && path.file_name().map_or(false, |name| name == "flash.json") {
                 let content = fs::read_to_string(&path).expect("Could not read flash.json");
 

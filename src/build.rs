@@ -68,7 +68,7 @@ async fn list_exes(state: &mut AppState, path: &String) {
             if nee_push {
                 state.crates.push(Executable {
                     name: file_name.to_string(),
-                    time: time,
+                    time,
                     need_update: true,
                     path: path.to_string_lossy().to_string(),
                 });
@@ -84,7 +84,7 @@ fn is_executable(path: &Path) -> bool {
     {
         path.extension().map(|ext| ext == "exe").unwrap_or(false)
     }
-    // No Linux/macOS, verificamos se o arquivo tem permissões de execução
+    // No Linux/macOS, verificamos se o arquivo tem permissões de execução.
     #[cfg(not(target_os = "windows"))]
     {
         use std::os::unix::fs::PermissionsExt;
