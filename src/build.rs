@@ -69,9 +69,9 @@ async fn list_exes(state: &mut AppState, path: &String) {
             let mut nee_push = true;
 
             for exe in &mut state.crates {
-                if exe.name == file_name && exe.hash != hash {
+                if exe.name == file_name {
                     exe.hash = hash;
-                    exe.need_update = true;
+                    exe.need_update = exe.hash != hash;
                     exe.path = path.to_string_lossy().to_string();
                     nee_push = false;
                     break;
@@ -90,7 +90,7 @@ async fn list_exes(state: &mut AppState, path: &String) {
     }
 }
 
-// Função auxiliar para verificar se um arquivo é executável
+// Função auxiliar para verificar se um arquivo é executável.
 fn is_executable(path: &Path) -> bool {
     // No Windows, verificamos a extensão .exe
     #[cfg(target_os = "windows")]

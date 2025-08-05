@@ -4,10 +4,13 @@ use std::{
     sync::mpsc,
     time::{Duration, Instant},
 };
-
+use std::path::PathBuf;
 use crate::{build::build_workspace, observers_handle::try_send_to_observer, state::AppState};
+use crate::config::FlashConfig;
 
 pub async fn watch_workspace(mut state: AppState, path: String) -> Result<(), Error> {
+    let config = FlashConfig::new(PathBuf::from(&path)).unwrap();
+
     let (tx, rx) = mpsc::channel::<notify::Result<Event>>();
     let mut watcher = notify::recommended_watcher(tx)?;
     watcher.watch(Path::new(&path), RecursiveMode::Recursive)?;
@@ -17,21 +20,21 @@ pub async fn watch_workspace(mut state: AppState, path: String) -> Result<(), Er
 
     if state.crates.len().eq(&0) {
         build_workspace(&mut state, path.clone()).await;
-        let _ = try_send_to_observer(&state, path.clone()).await;
+        let _ = try_send_to_observer(&state, &config.observers).await;
     }
 
     while let Ok(res) = rx.recv() {
         match res {
             Ok(event) => match event.kind {
                 notify::EventKind::Modify(_) => {
-                    if is_target_dir(event) {
+                    if is_not_allow_dir(event, &config) {
                         continue;
                     }
 
                     let now = Instant::now();
                     if now.duration_since(last_processed) > debounce_duration {
                         build_workspace(&mut state, path.clone()).await;
-                        let _ = try_send_to_observer(&state, path.clone()).await;
+                        let _ = try_send_to_observer(&state, &config.observers).await;
                         last_processed = now;
                     }
                 }
@@ -44,9 +47,15 @@ pub async fn watch_workspace(mut state: AppState, path: String) -> Result<(), Er
     Ok(())
 }
 
-fn is_target_dir(event: Event) -> bool {
+fn is_not_allow_dir(event: Event, config: &FlashConfig) -> bool {
     event
         .paths
         .iter()
-        .any(|p| p.to_string_lossy().contains("/target/"))
+        .any(|p| {
+            for dir in &config.dir {
+                return p.to_string_lossy().contains(dir);
+            }
+
+            return false;
+        })
 }
