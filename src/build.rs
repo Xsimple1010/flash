@@ -14,15 +14,15 @@ pub fn build_workspace(state: &mut AppState, path: String) {
         Ok(output) => {
             if !output.status.success() {
                 let stderr = String::from_utf8_lossy(&output.stderr);
-                eprintln!("Erro no build: {}", stderr);
+                eprintln!("Build error: {}", stderr);
                 return;
             }
 
-            println!("Build realizado com sucesso no diretório: {}", &path);
+            println!("Build completed successfully in directory: {}", &path);
             list_exes(state, &path);
         }
         Err(e) => {
-            eprintln!("Erro ao executar o comando cargo build: {}", e);
+            eprintln!("Error executing 'cargo build': {}", e);
             return;
         }
     }
@@ -35,7 +35,7 @@ fn list_exes(state: &mut AppState, path: &String) {
         Ok(entries) => entries,
         Err(_) => {
             eprintln!(
-                "Erro ao ler o diretório target/debug: {}",
+                "Error reading target/debug directory: {}",
                 target_dir.display()
             );
             return;
@@ -77,14 +77,14 @@ fn list_exes(state: &mut AppState, path: &String) {
     }
 }
 
-// Função auxiliar para verificar se um arquivo é executável.
+// Helper function to check whether a file is executable.
 fn is_executable(path: &Path) -> bool {
-    // No Windows, verificamos a extensão .exe
+    // On Windows, check for the .exe extension
     #[cfg(target_os = "windows")]
     {
         path.extension().map(|ext| ext == "exe").unwrap_or(false)
     }
-    // No Linux/macOS, verificamos se o arquivo tem permissões de execução.
+    // On Linux/macOS, check whether the file has execute permissions.
     #[cfg(not(target_os = "windows"))]
     {
         use std::os::unix::fs::PermissionsExt;
