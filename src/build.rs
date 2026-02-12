@@ -2,7 +2,7 @@ use std::{fs::read_dir, path::Path, process::Command};
 
 use crate::state::{AppState, Executable};
 
-pub async fn build_workspace(state: &mut AppState, path: String) {
+pub fn build_workspace(state: &mut AppState, path: String) {
     let path_clone = path.clone();
 
     let output = Command::new("cargo")
@@ -19,7 +19,7 @@ pub async fn build_workspace(state: &mut AppState, path: String) {
             }
 
             println!("Build realizado com sucesso no diretório: {}", &path);
-            list_exes(state, &path).await;
+            list_exes(state, &path);
         }
         Err(e) => {
             eprintln!("Erro ao executar o comando cargo build: {}", e);
@@ -28,7 +28,7 @@ pub async fn build_workspace(state: &mut AppState, path: String) {
     }
 }
 
-async fn list_exes(state: &mut AppState, path: &String) {
+fn list_exes(state: &mut AppState, path: &String) {
     let target_dir = Path::new(&path).join("target").join("debug");
 
     let entries = match read_dir(&target_dir) {
